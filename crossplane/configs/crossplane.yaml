@@ -1,0 +1,17 @@
+apiVersion: meta.pkg.crossplane.io/v1
+kind: Configuration
+metadata:
+  name: crossplane-kind-poc
+  annotations:
+    meta.crossplane.io/maintainer: Platform Engineering Team
+    meta.crossplane.io/description: Crossplane Kind PoC Configuration
+spec:
+  crossplane:
+    version: ">=v1.14.0-0"
+  dependsOn:
+    - provider: xpkg.upbound.io/crossplane-contrib/provider-kubernetes
+      version: ">=v0.12.0"
+    - provider: xpkg.upbound.io/crossplane-contrib/provider-helm
+      version: ">=v0.19.0"
+    - provider: xpkg.upbound.io/crossplane-contrib/provider-nop
+      version: ">=v0.2.0"

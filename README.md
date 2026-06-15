@@ -92,10 +92,10 @@ crossplane-kind-poc/
 
 - [x] Basic setup
 - [x] Simple App Composition
-- [ ] Advanced Platform Environment
-- [ ] Composition Functions
-- [ ] Full ArgoCD GitOps
-- [ ] Configuration packaging
+- [x] Advanced Platform Environment
+- [x] Composition Functions
+- [x] Full ArgoCD GitOps
+- [x] Configuration packaging
 
 ## 🤝 Contributing / Extending
 
@@ -106,8 +106,8 @@ Fork this repo and extend it! Great next steps:
 
 ## 📄 Documentation
 
-- [spec.md](spec.md) – Detailed specification
-- [plan.md](plan.md) – Implementation roadmap
+- [spec.md](docs/spec.md) – Detailed specification
+- [plan.md](docs/plan.md) – Implementation roadmap
 - [architecture.md](docs/architecture.md) – Diagrams & deep dive
 - [docs/demo.md](docs/demo.md) – Step-by-step demo
 

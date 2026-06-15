@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-configs
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/crossplane-kind-poc.git
+    targetRevision: HEAD
+    path: crossplane/
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

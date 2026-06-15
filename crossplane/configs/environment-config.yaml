@@ -1,0 +1,11 @@
+apiVersion: environment.crossplane.io/v1alpha1
+kind: EnvironmentConfig
+metadata:
+  name: crossplane-kind-poc-env
+data:
+  tags:
+    - key: environment
+      value: dev
+    - key: managed-by
+      value: crossplane
+  defaultRegion: local
