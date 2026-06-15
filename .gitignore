@@ -1,0 +1,13 @@
+*.tfstate
+*.tfstate.*
+.terraform/
+*.log
+.DS_Store
+node_modules/
+.idea/
+*.secret.yaml
+*.tmp
+.env
+*.local
+*.swp
+*.swo
