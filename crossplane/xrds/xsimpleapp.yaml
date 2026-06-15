@@ -20,6 +20,7 @@ spec:
           properties:
             spec:
               type: object
+              x-kubernetes-preserve-unknown-fields: true
               properties:
                 parameters:
                   type: object
@@ -35,3 +36,6 @@ spec:
                       default: 80
                     namespace:
                       type: string
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true

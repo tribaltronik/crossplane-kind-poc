@@ -35,8 +35,8 @@ info "Adding Crossplane Helm repository..."
 helm repo add crossplane-stable https://charts.crossplane.io/stable
 helm repo update
 
-info "Installing Crossplane via Helm..."
-helm install crossplane crossplane-stable/crossplane \
+info "Installing Crossplane via Helm (upgrade --install)..."
+helm upgrade --install crossplane crossplane-stable/crossplane \
     --namespace crossplane-system \
     --create-namespace \
     --wait \
@@ -53,11 +53,22 @@ if [ -d crossplane/providers ]; then
     provider_files=(crossplane/providers/*.yaml)
     shopt -u nullglob
     if [ ${#provider_files[@]} -gt 0 ]; then
-        info "Installing Crossplane providers..."
-        kubectl apply -f "${provider_files[@]}"
+        info "Installing Crossplane providers (phase 1: Provider resources, ignoring ProviderConfig errors)..."
+        # First pass: create Provider packages (ProviderConfig CRDs don't exist yet)
+        set +e
+        for f in "${provider_files[@]}"; do
+            kubectl apply -f "$f" 2>/dev/null || true
+        done
+        set -e
 
         info "Waiting for providers to become healthy..."
         kubectl wait --for=condition=healthy provider.pkg.crossplane.io --all --timeout=5m
+
+        info "Installing Crossplane providers (phase 2: ProviderConfigs)..."
+        # Second pass: now CRDs exist, so ProviderConfigs will apply
+        for f in "${provider_files[@]}"; do
+            kubectl apply -f "$f"
+        done
     else
         warn "No YAML manifests found in crossplane/providers/ — skipping provider installation."
     fi
