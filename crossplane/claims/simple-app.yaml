@@ -1,0 +1,10 @@
+apiVersion: example.com/v1alpha1
+kind: SimpleApp
+metadata:
+  name: my-simple-app
+spec:
+  parameters:
+    image: nginx:latest
+    replicas: 2
+    port: 80
+    namespace: my-app

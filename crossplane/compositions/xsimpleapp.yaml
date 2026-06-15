@@ -1,0 +1,89 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xsimpleapps.example.com
+spec:
+  compositeTypeRef:
+    apiVersion: example.com/v1alpha1
+    kind: XSimpleApp
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: crossplane-contrib-function-patch-and-transform
+      input:
+        apiVersion: pt.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+            - name: namespace
+              base:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: ""
+              patches:
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.namespace
+                  toFieldPath: metadata.name
+            - name: deployment
+              base:
+                apiVersion: apps/v1
+                kind: Deployment
+                spec:
+                  replicas: 1
+                  selector:
+                    matchLabels:
+                      app: ""
+                  template:
+                    metadata:
+                      labels:
+                        app: ""
+                    spec:
+                      containers:
+                        - name: app
+                          image: ""
+                          ports:
+                            - containerPort: 80
+              patches:
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.replicas
+                  toFieldPath: spec.replicas
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.image
+                  toFieldPath: spec.template.spec.containers[0].image
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.namespace
+                  toFieldPath: metadata.namespace
+                - type: FromCompositeFieldPath
+                  fromFieldPath: metadata.name
+                  toFieldPath: spec.selector.matchLabels.app
+                - type: FromCompositeFieldPath
+                  fromFieldPath: metadata.name
+                  toFieldPath: spec.template.metadata.labels.app
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.port
+                  toFieldPath: spec.template.spec.containers[0].ports[0].containerPort
+            - name: service
+              base:
+                apiVersion: v1
+                kind: Service
+                spec:
+                  ports:
+                    - port: 80
+                      targetPort: 80
+                      protocol: TCP
+                  selector:
+                    app: ""
+              patches:
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.port
+                  toFieldPath: spec.ports[0].port
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.port
+                  toFieldPath: spec.ports[0].targetPort
+                - type: FromCompositeFieldPath
+                  fromFieldPath: spec.parameters.namespace
+                  toFieldPath: metadata.namespace
+                - type: FromCompositeFieldPath
+                  fromFieldPath: metadata.name
+                  toFieldPath: spec.selector.app
