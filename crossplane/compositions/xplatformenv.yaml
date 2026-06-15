@@ -1,0 +1,223 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xplatformenvs.example.com
+spec:
+  compositeTypeRef:
+    apiVersion: example.com/v1alpha1
+    kind: XPlatformEnv
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: crossplane-contrib-function-patch-and-transform
+      input:
+        apiVersion: pt.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: namespace
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
+              spec:
+                deletionPolicy: Delete
+                forProvider:
+                  manifest:
+                    apiVersion: v1
+                    kind: Namespace
+                    metadata:
+                      name: ""
+                providerConfigRef:
+                  name: kubernetes-provider
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.forProvider.manifest.metadata.name
+
+          - name: helm-release-db
+            base:
+              apiVersion: helm.crossplane.io/v1beta1
+              kind: HelmRelease
+              metadata:
+                name: ""
+              spec:
+                deletionPolicy: Delete
+                forProvider:
+                  chart:
+                    name: ""
+                    repository: https://charts.bitnami.com/bitnami
+                    version: "15.x"
+                  namespace: ""
+                providerConfigRef:
+                  name: helm-provider
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: metadata.name
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.forProvider.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.dbType
+                toFieldPath: spec.forProvider.chart.name
+                transforms:
+                  - type: map
+                    map:
+                      postgres: postgresql
+                      redis: redis
+
+          - name: deployment
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
+              spec:
+                deletionPolicy: Delete
+                forProvider:
+                  manifest:
+                    apiVersion: apps/v1
+                    kind: Deployment
+                    metadata:
+                      name: app
+                    spec:
+                      replicas: 1
+                      selector:
+                        matchLabels:
+                          app: ""
+                      template:
+                        metadata:
+                          labels:
+                            app: ""
+                        spec:
+                          containers:
+                            - name: app
+                              image: ""
+                              ports:
+                                - containerPort: 80
+                providerConfigRef:
+                  name: kubernetes-provider
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.forProvider.manifest.metadata.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.appImage
+                toFieldPath: spec.forProvider.manifest.spec.template.spec.containers[0].image
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.forProvider.manifest.spec.selector.matchLabels.app
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.forProvider.manifest.spec.template.metadata.labels.app
+
+          - name: service
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
+              spec:
+                deletionPolicy: Delete
+                forProvider:
+                  manifest:
+                    apiVersion: v1
+                    kind: Service
+                    metadata:
+                      name: app
+                    spec:
+                      ports:
+                        - port: 80
+                          targetPort: 80
+                          protocol: TCP
+                      selector:
+                        app: ""
+                providerConfigRef:
+                  name: kubernetes-provider
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.forProvider.manifest.metadata.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.forProvider.manifest.spec.selector.app
+
+          - name: configmap
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
+              spec:
+                deletionPolicy: Delete
+                forProvider:
+                  manifest:
+                    apiVersion: v1
+                    kind: ConfigMap
+                    metadata:
+                      name: app-config
+                    data:
+                      DB_TYPE: ""
+                      DB_HOST: ""
+                providerConfigRef:
+                  name: kubernetes-provider
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.forProvider.manifest.metadata.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.dbType
+                toFieldPath: spec.forProvider.manifest.data.DB_TYPE
+              - type: CombineFromComposite
+                combine:
+                  variables:
+                    - fromFieldPath: spec.parameters.environment
+                    - fromFieldPath: spec.parameters.dbType
+                    - fromFieldPath: spec.parameters.environment
+                  strategy: string
+                  string:
+                    fmt: "%s-%s.%s.svc.cluster.local"
+                toFieldPath: spec.forProvider.manifest.data.DB_HOST
+                transforms:
+                  - type: string
+                    string:
+                      type: Replace
+                      replace:
+                        search: postgres.
+                        replace: postgresql.
+                  - type: string
+                    string:
+                      type: Replace
+                      replace:
+                        search: redis.
+                        replace: redis-master.
+
+          - name: network-policy
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
+              spec:
+                deletionPolicy: Delete
+                forProvider:
+                  manifest:
+                    apiVersion: networking.k8s.io/v1
+                    kind: NetworkPolicy
+                    metadata:
+                      name: app-network-policy
+                    spec:
+                      podSelector: {}
+                      policyTypes:
+                        - Ingress
+                      ingress:
+                        - from:
+                            - podSelector:
+                                matchLabels:
+                                  app: ""
+                          ports:
+                            - port: 5432
+                              protocol: TCP
+                            - port: 6379
+                              protocol: TCP
+                providerConfigRef:
+                  name: kubernetes-provider
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.forProvider.manifest.metadata.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.forProvider.manifest.spec.ingress[0].from[0].podSelector.matchLabels.app

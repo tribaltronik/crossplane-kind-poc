@@ -1,0 +1,36 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xplatformenvs.example.com
+spec:
+  group: example.com
+  names:
+    kind: XPlatformEnv
+    plural: xplatformenvs
+  claimNames:
+    kind: PlatformEnv
+    plural: platformenvs
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    appImage:
+                      type: string
+                    dbType:
+                      type: string
+                      enum:
+                        - postgres
+                        - redis
+                    environment:
+                      type: string
+                      default: dev

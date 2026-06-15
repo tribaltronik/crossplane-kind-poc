@@ -1,0 +1,9 @@
+apiVersion: example.com/v1alpha1
+kind: PlatformEnv
+metadata:
+  name: my-dev-env
+spec:
+  parameters:
+    appImage: nginx:latest
+    dbType: postgres
+    environment: dev
