@@ -4,7 +4,7 @@
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.30+-blue)](https://kind.sigs.k8s.io/)
 [![Crossplane](https://img.shields.io/badge/Crossplane-1.17+-blue)](https://crossplane.io/)
 
-A fully local, laptop-friendly demonstration of **Crossplane** as a universal control plane running on **Kind** (Kubernetes-in-Docker). This PoC shows how to manage "anything" declaratively using custom APIs, Compositions, and Providers — perfect for learning Platform Engineering and building an impressive GitHub portfolio.
+A fully local, laptop-friendly demonstration of **Crossplane** as a universal control plane running on **Kind** (Kubernetes-in-Docker). This PoC shows how to manage "anything" declaratively using custom APIs, Compositions, and Providers — perfect for learning Platform Engineering.
 
 **Zero cloud cost. Full GitOps. Self-service infrastructure.**
 

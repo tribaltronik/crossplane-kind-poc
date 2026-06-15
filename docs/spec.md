@@ -11,7 +11,7 @@
 - Zero cloud cost – everything runs locally.
 - Easy to extend to real cloud providers (AWS, GCP, Azure) by swapping ProviderConfigs.
 
-**Target Audience**: Platform Engineers, SREs, DevOps practitioners, and hiring managers reviewing GitHub portfolios.
+**Target Audience**: Platform Engineers, SREs, DevOps practitioners.
 
 ## Scope
 **In Scope**:
