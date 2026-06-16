@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: crossplane-provider-kubernetes
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: crossplane-provider-kubernetes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crossplane-provider-kubernetes
+subjects:
+- kind: ServiceAccount
+  name: provider-kubernetes-6e1fd76ec9c7
+  namespace: crossplane-system
+- kind: ServiceAccount
+  name: provider-helm-239d2e74884b
+  namespace: crossplane-system
